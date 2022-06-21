@@ -14,8 +14,6 @@ os.chdir("CogView2")
 os.system("gdown https://drive.google.com/uc?id=1-2nI2TTUOdiQ2WpydGafk_bZIZggQBK4")
 os.system("7za x coglm.zip")
 os.system("gdown https://drive.google.com/uc?id=1ulfXJFstYZUestvWcQIadKkNNDVbpIdM")
-os.mkdir("/root/.icetk_models")
-os.system("cp /home/user/app/CogView2/ice_image.pt /root/.icetk_models/ice_image.pt")
 
 def inference(text):
     with open("input.txt") as f:
