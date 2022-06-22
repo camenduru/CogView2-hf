@@ -2,25 +2,16 @@
 
 from __future__ import annotations
 
-import argparse
-
 import gradio as gr
 
 from model import AppModel
 
-DESCRIPTION = '''# CogView2 (text2image)
-
-This is an unofficial demo for <a href="https://github.com/THUDM/CogView2">https://github.com/THUDM/CogView2</a>.
-
-[This Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) is used for translation from English to Chinese.
+DESCRIPTION = '# <a href="https://github.com/THUDM/CogView2">CogView2</a> (text2image)'
+NOTES = '''
+- This app is adapted from <a href="https://github.com/hysts/CogView2_demo">https://github.com/hysts/CogView2_demo</a>. It would be recommended to use the repo if you want to run the app yourself.
+- [This Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) is used for translation from English to Chinese.
 '''
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--only-first-stage', action='store_true')
-    parser.add_argument('--share', action='store_true')
-    return parser.parse_args()
+FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge.glitch.me/badge?page_id=THUDM.CogView2" />'
 
 
 def set_example_text(example: list) -> dict:
@@ -28,8 +19,9 @@ def set_example_text(example: list) -> dict:
 
 
 def main():
-    args = parse_args()
-    model = AppModel(args.only_first_stage)
+    only_first_stage = True
+    max_inference_batch_size = 4
+    model = AppModel(max_inference_batch_size, only_first_stage)
 
     with gr.Blocks(css='style.css') as demo:
         gr.Markdown(DESCRIPTION)
@@ -59,8 +51,8 @@ def main():
                                      label='Seed')
                     only_first_stage = gr.Checkbox(
                         label='Only First Stage',
-                        value=args.only_first_stage,
-                        visible=not args.only_first_stage)
+                        value=only_first_stage,
+                        visible=not only_first_stage)
                     num_images = gr.Slider(1,
                                            16,
                                            step=1,
@@ -80,6 +72,9 @@ def main():
                         with gr.TabItem('Output (Gallery)'):
                             result_gallery = gr.Gallery(show_label=False)
 
+        gr.Markdown(NOTES)
+        gr.Markdown(FOOTER)
+
         run_button.click(fn=model.run_with_translation,
                          inputs=[
                              text,
@@ -98,10 +93,7 @@ def main():
                        inputs=examples,
                        outputs=examples.components)
 
-    demo.launch(
-        enable_queue=True,
-        share=args.share,
-    )
+    demo.launch(enable_queue=True)
 
 
 if __name__ == '__main__':

@@ -1,19 +1,68 @@
-#This code is adapted from https://github.com/THUDM/CogView2/blob/4e55cce981eb94b9c8c1f19ba9f632fd3ee42ba8/cogview2_text2image.py
+# This code is adapted from https://github.com/THUDM/CogView2/blob/4e55cce981eb94b9c8c1f19ba9f632fd3ee42ba8/cogview2_text2image.py
 
 from __future__ import annotations
 
 import argparse
 import functools
 import logging
+import os
 import pathlib
+import subprocess
 import sys
 import time
+import zipfile
 from typing import Any
+
+if os.getenv('SYSTEM') == 'spaces':
+    subprocess.run('pip install icetk==0.0.3'.split())
+    subprocess.run('pip install SwissArmyTransformer==0.2.4'.split())
+    subprocess.run(
+        'pip install git+https://github.com/Sleepychord/Image-Local-Attention@43fee31'
+        .split())
+    subprocess.run('git clone https://github.com/NVIDIA/apex'.split())
+    subprocess.run('git checkout 1403c21'.split(), cwd='apex')
+    subprocess.run(
+        'pip install -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./'
+        .split(),
+        cwd='apex')
+    subprocess.run('rm -rf apex'.split())
+    with open('patch') as f:
+        subprocess.run('patch -p1'.split(), cwd='CogView2', stdin=f)
+
+    from huggingface_hub import hf_hub_download
+
+    def download_and_extract_icetk_models() -> None:
+        icetk_model_dir = pathlib.Path('/home/user/.icetk_models')
+        icetk_model_dir.mkdir()
+        path = hf_hub_download('THUDM/icetk',
+                               'models.zip',
+                               use_auth_token=os.getenv('HF_TOKEN'))
+        with zipfile.ZipFile(path) as f:
+            f.extractall(path=icetk_model_dir.as_posix())
+
+    def download_and_extract_cogview2_models(name: str) -> None:
+        path = hf_hub_download('THUDM/CogView2',
+                               name,
+                               use_auth_token=os.getenv('HF_TOKEN'))
+        with zipfile.ZipFile(path) as f:
+            f.extractall()
+        os.remove(path)
+
+    download_and_extract_icetk_models()
+    names = [
+        'coglm.zip',
+        'cogview2-dsr.zip',
+        #'cogview2-itersr.zip',
+    ]
+    for name in names:
+        download_and_extract_cogview2_models(name)
+
+    os.environ['SAT_HOME'] = '/home/user/app/sharefs/cogview-new'
 
 import gradio as gr
 import numpy as np
 import torch
-from icetk import IceTokenizer
+from icetk import icetk as tokenizer
 from SwissArmyTransformer import get_args
 from SwissArmyTransformer.arguments import set_random_seed
 from SwissArmyTransformer.generation.autoregressive_sampling import \
@@ -38,7 +87,8 @@ logger.setLevel(logging.DEBUG)
 logger.propagate = False
 logger.addHandler(stream_handler)
 
-ICETK_MODEL_DIR = app_dir / 'icetk_models'
+tokenizer.add_special_tokens(
+    ['<start_of_image>', '<start_of_english>', '<start_of_chinese>'])
 
 
 def get_masks_and_position_ids_coglm(
@@ -140,11 +190,12 @@ def get_default_args() -> argparse.Namespace:
 
 
 class Model:
-    def __init__(self, only_first_stage: bool = False):
+    def __init__(self,
+                 max_inference_batch_size: int,
+                 only_first_stage: bool = False):
         self.args = get_default_args()
         self.args.only_first_stage = only_first_stage
-
-        self.tokenizer = self.load_tokenizer()
+        self.args.max_inference_batch_size = max_inference_batch_size
 
         self.model, self.args = self.load_model()
         self.strategy = self.load_strategy()
@@ -156,19 +207,6 @@ class Model:
         self.fp16 = self.args.fp16
         self.max_batch_size = self.args.max_inference_batch_size
         self.only_first_stage = self.args.only_first_stage
-
-    def load_tokenizer(self) -> IceTokenizer:
-        logger.info('--- load_tokenizer ---')
-        start = time.perf_counter()
-
-        tokenizer = IceTokenizer(ICETK_MODEL_DIR.as_posix())
-        tokenizer.add_special_tokens(
-            ['<start_of_image>', '<start_of_english>', '<start_of_chinese>'])
-
-        elapsed = time.perf_counter() - start
-        logger.info(f'Elapsed: {elapsed}')
-        logger.info('--- done ---')
-        return tokenizer
 
     def load_model(self) -> tuple[InferenceModel, argparse.Namespace]:
         logger.info('--- load_model ---')
@@ -185,7 +223,7 @@ class Model:
         logger.info('--- load_strategy ---')
         start = time.perf_counter()
 
-        invalid_slices = [slice(self.tokenizer.num_image_tokens, None)]
+        invalid_slices = [slice(tokenizer.num_image_tokens, None)]
         strategy = CoglmStrategy(invalid_slices,
                                  temperature=self.args.temp_all_gen,
                                  top_k=self.args.topk_gen,
@@ -213,6 +251,7 @@ class Model:
         logger.info('--- update_style ---')
         start = time.perf_counter()
 
+        self.style = style
         self.args = argparse.Namespace(**(vars(self.args) | get_recipe(style)))
         self.query_template = self.args.query_template
         logger.info(f'{self.query_template=}')
@@ -233,14 +272,21 @@ class Model:
 
     def run(self, text: str, style: str, seed: int, only_first_stage: bool,
             num: int) -> list[np.ndarray] | None:
+        logger.info('==================== run ====================')
+        start = time.perf_counter()
+
+        self.update_style(style)
         set_random_seed(seed)
         seq, txt_len = self.preprocess_text(text)
         if seq is None:
             return None
-        self.update_style(style)
         self.only_first_stage = only_first_stage
         tokens = self.generate_tokens(seq, txt_len, num)
         res = self.generate_images(seq, txt_len, tokens)
+
+        elapsed = time.perf_counter() - start
+        logger.info(f'Elapsed: {elapsed}')
+        logger.info('==================== done ====================')
         return res
 
     @torch.inference_mode()
@@ -251,7 +297,7 @@ class Model:
 
         text = self.query_template.format(text)
         logger.info(f'{text=}')
-        seq = self.tokenizer.encode(text)
+        seq = tokenizer.encode(text)
         logger.info(f'{len(seq)=}')
         if len(seq) > 110:
             logger.info('The input text is too long.')
@@ -319,7 +365,7 @@ class Model:
         if self.only_first_stage:
             for i in range(len(tokens)):
                 seq = tokens[i]
-                decoded_img = self.tokenizer.decode(image_ids=seq[-400:])
+                decoded_img = tokenizer.decode(image_ids=seq[-400:])
                 decoded_img = torch.nn.functional.interpolate(decoded_img,
                                                               size=(480, 480))
                 decoded_img = self.postprocess(decoded_img[0])
@@ -327,7 +373,7 @@ class Model:
         else:  # sr
             iter_tokens = self.srg.sr_base(tokens[:, -400:], seq[:txt_len])
             for seq in iter_tokens:
-                decoded_img = self.tokenizer.decode(image_ids=seq[-3600:])
+                decoded_img = tokenizer.decode(image_ids=seq[-3600:])
                 decoded_img = torch.nn.functional.interpolate(decoded_img,
                                                               size=(480, 480))
                 decoded_img = self.postprocess(decoded_img[0])
@@ -340,8 +386,8 @@ class Model:
 
 
 class AppModel(Model):
-    def __init__(self, only_first_stage: bool):
-        super().__init__(only_first_stage)
+    def __init__(self, max_inference_batch_size: int, only_first_stage: bool):
+        super().__init__(max_inference_batch_size, only_first_stage)
         self.translator = gr.Interface.load(
             'spaces/chinhon/translation_eng2ch')
 
