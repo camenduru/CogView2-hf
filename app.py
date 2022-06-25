@@ -39,6 +39,7 @@ def main():
                     translate = gr.Checkbox(label='Translate to Chinese',
                                             value=False)
                     style = gr.Dropdown(choices=[
+                        'none',
                         'mainbody',
                         'photo',
                         'flat',
@@ -49,6 +50,7 @@ def main():
                         'chinese',
                         'watercolor',
                     ],
+                                        value='mainbody',
                                         label='Style')
                     seed = gr.Slider(0,
                                      100000,
