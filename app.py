@@ -69,13 +69,14 @@ def main():
                                            step=1,
                                            value=4,
                                            label='Number of Images')
+                    run_button = gr.Button('Run')
+
                     with open('samples.txt') as f:
                         samples = [
                             line.strip().split('\t') for line in f.readlines()
                         ]
                     examples = gr.Dataset(components=[text, style],
                                           samples=samples)
-                    run_button = gr.Button('Run')
 
             with gr.Column():
                 with gr.Group():
