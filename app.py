@@ -6,7 +6,13 @@ import gradio as gr
 
 from model import AppModel
 
-DESCRIPTION = '# <a href="https://github.com/THUDM/CogView2">CogView2</a> (text2image)'
+DESCRIPTION = '''# <a href="https://github.com/THUDM/CogView2">CogView2</a> (text2image)
+
+This application accepts English or Chinese as input.
+In general, Chinese input produces better results than English input.
+But the translation model used in this app may mistranslate and the results could be poor.
+So, it is also a good idea to input the translation results from other translation services.
+'''
 NOTES = '''
 - This app is adapted from <a href="https://github.com/hysts/CogView2_demo">https://github.com/hysts/CogView2_demo</a>. It would be recommended to use the repo if you want to run the app yourself.
 - [This Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) is used for translation from English to Chinese.
