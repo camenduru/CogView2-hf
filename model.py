@@ -80,10 +80,10 @@ formatter = logging.Formatter(
     '[%(asctime)s] %(name)s %(levelname)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S')
 stream_handler = logging.StreamHandler(stream=sys.stdout)
-stream_handler.setLevel(logging.DEBUG)
+stream_handler.setLevel(logging.INFO)
 stream_handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 logger.propagate = False
 logger.addHandler(stream_handler)
 
@@ -254,7 +254,7 @@ class Model:
         self.style = style
         self.args = argparse.Namespace(**(vars(self.args) | get_recipe(style)))
         self.query_template = self.args.query_template
-        logger.info(f'{self.query_template=}')
+        logger.debug(f'{self.query_template=}')
 
         self.strategy.temperature = self.args.temp_all_gen
 
@@ -296,7 +296,7 @@ class Model:
         start = time.perf_counter()
 
         text = self.query_template.format(text)
-        logger.info(f'{text=}')
+        logger.debug(f'{text=}')
         seq = tokenizer.encode(text)
         logger.info(f'{len(seq)=}')
         if len(seq) > 110:
@@ -342,7 +342,7 @@ class Model:
             output_list.append(coarse_samples)
             remaining -= self.max_batch_size
         output_tokens = torch.cat(output_list, dim=0)
-        logger.info(f'{output_tokens.shape=}')
+        logger.debug(f'{output_tokens.shape=}')
 
         elapsed = time.perf_counter() - start
         logger.info(f'Elapsed: {elapsed}')
@@ -360,7 +360,7 @@ class Model:
         logger.info('--- generate_images ---')
         start = time.perf_counter()
 
-        logger.info(f'{self.only_first_stage=}')
+        logger.debug(f'{self.only_first_stage=}')
         res = []
         if self.only_first_stage:
             for i in range(len(tokens)):
@@ -414,6 +414,9 @@ class AppModel(Model):
         self, text: str, translate: bool, style: str, seed: int,
         only_first_stage: bool, num: int
     ) -> tuple[str | None, np.ndarray | None, list[np.ndarray] | None]:
+        logger.info(
+            f'{text=}, {translate=}, {style=}, {seed=}, {only_first_stage=}, {num=}'
+        )
         if translate:
             text = translated_text = self.translator(text)
         else:
