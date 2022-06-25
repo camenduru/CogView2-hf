@@ -1,9 +1,9 @@
-A lion teacher wearing a suit is in front of a blackboard.
-A robot is riding under the blue and cloudy sky.
-A lion man is typing in the office.
-A pirate captain with a skull.
-Earth in the eye.
-A magnificent church. Sketch.
-Mount Fuji, cherry blossom and Akita dog. Oil painting.
-A tiger with angel's wings.
-A fox is sitting on the books.
+A lion teacher wearing a suit is in front of a blackboard.	mainbody
+A robot is riding under the blue and cloudy sky.	mainbody
+A lion man is typing in the office.	mainbody
+A pirate captain with a skull.	mainbody
+Earth in the eye.	mainbody
+A magnificent church.	sketch
+Mount Fuji, cherry blossom and Akita dog.	oil
+A tiger with angel's wings.	mainbody
+A fox is sitting on the books.	mainbody
