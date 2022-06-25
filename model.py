@@ -215,8 +215,7 @@ class Model:
         model, args = InferenceModel.from_pretrained(self.args, 'coglm')
 
         elapsed = time.perf_counter() - start
-        logger.info(f'Elapsed: {elapsed}')
-        logger.info('--- done ---')
+        logger.info(f'--- done ({elapsed=:.3f} ---')
         return model, args
 
     def load_strategy(self) -> CoglmStrategy:
@@ -230,8 +229,7 @@ class Model:
                                  top_k_cluster=self.args.temp_cluster_gen)
 
         elapsed = time.perf_counter() - start
-        logger.info(f'Elapsed: {elapsed}')
-        logger.info('--- done ---')
+        logger.info(f'--- done ({elapsed=:.3f} ---')
         return strategy
 
     def load_srg(self) -> SRGroup:
@@ -241,8 +239,7 @@ class Model:
         srg = None if self.args.only_first_stage else SRGroup(self.args)
 
         elapsed = time.perf_counter() - start
-        logger.info(f'Elapsed: {elapsed}')
-        logger.info('--- done ---')
+        logger.info(f'--- done ({elapsed=:.3f} ---')
         return srg
 
     def update_style(self, style: str) -> None:
@@ -267,8 +264,7 @@ class Model:
             self.srg.itersr.strategy.topk = self.args.topk_itersr
 
         elapsed = time.perf_counter() - start
-        logger.info(f'Elapsed: {elapsed}')
-        logger.info('--- done ---')
+        logger.info(f'--- done ({elapsed=:.3f} ---')
 
     def run(self, text: str, style: str, seed: int, only_first_stage: bool,
             num: int) -> list[np.ndarray] | None:
@@ -306,8 +302,7 @@ class Model:
         seq = torch.tensor(seq + [-1] * 400, device=self.device)
 
         elapsed = time.perf_counter() - start
-        logger.info(f'Elapsed: {elapsed}')
-        logger.info('--- done ---')
+        logger.info(f'--- done ({elapsed=:.3f} ---')
         return seq, txt_len
 
     @torch.inference_mode()
@@ -345,8 +340,7 @@ class Model:
         logger.debug(f'{output_tokens.shape=}')
 
         elapsed = time.perf_counter() - start
-        logger.info(f'Elapsed: {elapsed}')
-        logger.info('--- done ---')
+        logger.info(f'--- done ({elapsed=:.3f} ---')
         return output_tokens
 
     @staticmethod
@@ -380,8 +374,7 @@ class Model:
                 res.append(decoded_img)  # only the last image (target)
 
         elapsed = time.perf_counter() - start
-        logger.info(f'Elapsed: {elapsed}')
-        logger.info('--- done ---')
+        logger.info(f'--- done ({elapsed=:.3f} ---')
         return res
 
 
