@@ -29,7 +29,7 @@ def set_example_text(example: list) -> list[dict]:
 
 def main():
     only_first_stage = True
-    max_inference_batch_size = 4
+    max_inference_batch_size = 8
     model = AppModel(max_inference_batch_size, only_first_stage)
 
     with gr.Blocks(css='style.css') as demo:
