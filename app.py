@@ -67,7 +67,7 @@ def main():
                     num_images = gr.Slider(1,
                                            16,
                                            step=1,
-                                           value=8,
+                                           value=4,
                                            label='Number of Images')
                     with open('samples.txt') as f:
                         samples = [
