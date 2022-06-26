@@ -19,15 +19,15 @@ if os.getenv('SYSTEM') == 'spaces':
     subprocess.run(
         'pip install git+https://github.com/Sleepychord/Image-Local-Attention@43fee31'
         .split())
-    subprocess.run('git clone https://github.com/NVIDIA/apex'.split())
-    subprocess.run('git checkout 1403c21'.split(), cwd='apex')
-    with open('patch.apex') as f:
-        subprocess.run('patch -p1'.split(), cwd='apex', stdin=f)
-    subprocess.run(
-        'pip install -v --disable-pip-version-check --no-cache-dir --global-option --cpp_ext --global-option --cuda_ext ./'
-        .split(),
-        cwd='apex')
-    subprocess.run('rm -rf apex'.split())
+    #subprocess.run('git clone https://github.com/NVIDIA/apex'.split())
+    #subprocess.run('git checkout 1403c21'.split(), cwd='apex')
+    #with open('patch.apex') as f:
+    #    subprocess.run('patch -p1'.split(), cwd='apex', stdin=f)
+    #subprocess.run(
+    #    'pip install -v --disable-pip-version-check --no-cache-dir --global-option --cpp_ext --global-option --cuda_ext ./'
+    #    .split(),
+    #    cwd='apex')
+    #subprocess.run('rm -rf apex'.split())
     with open('patch') as f:
         subprocess.run('patch -p1'.split(), cwd='CogView2', stdin=f)
 
