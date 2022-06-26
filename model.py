@@ -22,7 +22,7 @@ if os.getenv('SYSTEM') == 'spaces':
     subprocess.run('git clone https://github.com/NVIDIA/apex'.split())
     subprocess.run('git checkout 1403c21'.split(), cwd='apex')
     subprocess.run(
-        'pip install -v --disable-pip-version-check --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./'
+        'pip install -v --disable-pip-version-check --no-cache-dir --global-option --cpp_ext --global-option --cuda_ext ./'
         .split(),
         cwd='apex')
     subprocess.run('rm -rf apex'.split())
