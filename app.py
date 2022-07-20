@@ -8,6 +8,7 @@ from model import AppModel
 
 DESCRIPTION = '''# <a href="https://github.com/THUDM/CogView2">CogView2</a> (text2image)
 
+This Spaces demo runs only one of the two stages the CogView2 codebase has, due to GPU hardware limitations, with that the outputs may not match the original codebase/paper
 This application accepts English or Chinese as input.
 In general, Chinese input produces better results than English input.
 If you check the "Translate to Chinese" checkbox, the app will use the English to Chinese translation results with [this Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) as input.
