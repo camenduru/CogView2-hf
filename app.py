@@ -8,12 +8,9 @@ from model import AppModel
 
 DESCRIPTION = '''# <a href="https://github.com/THUDM/CogView2">CogView2</a> (text2image)
 
-This Spaces demo runs only one of the two stages the CogView2 codebase has, due to GPU hardware limitations, with that the outputs may not match the original codebase/paper
-This application accepts English or Chinese as input.
+The model accepts English or Chinese as input.
 In general, Chinese input produces better results than English input.
-If you check the "Translate to Chinese" checkbox, the app will use the English to Chinese translation results with [this Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) as input.
-But the translation model may mistranslate and the results could be poor.
-So, it is also a good idea to input the translation results from other translation services.
+By checking the "Translate to Chinese" checkbox, the results of English to Chinese translation with this Space will be used as input. Since the translation model may mistranslate, you may want to use the translation results from other translation services.
 '''
 NOTES = '''
 - This app is adapted from <a href="https://github.com/hysts/CogView2_demo">https://github.com/hysts/CogView2_demo</a>. It would be recommended to use the repo if you want to run the app yourself.
@@ -29,7 +26,7 @@ def set_example_text(example: list) -> list[dict]:
 
 
 def main():
-    only_first_stage = True
+    only_first_stage = False
     max_inference_batch_size = 8
     model = AppModel(max_inference_batch_size, only_first_stage)
 

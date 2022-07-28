@@ -54,7 +54,7 @@ if os.getenv('SYSTEM') == 'spaces':
     names = [
         'coglm.zip',
         'cogview2-dsr.zip',
-        #'cogview2-itersr.zip',
+        'cogview2-itersr.zip',
     ]
     for name in names:
         download_and_extract_cogview2_models(name)
@@ -215,6 +215,8 @@ class Model:
         start = time.perf_counter()
 
         model, args = InferenceModel.from_pretrained(self.args, 'coglm')
+        if not self.args.only_first_stage:
+            model.transformer.cpu()
 
         elapsed = time.perf_counter() - start
         logger.info(f'--- done ({elapsed=:.3f}) ---')
@@ -278,8 +280,20 @@ class Model:
         seq, txt_len = self.preprocess_text(text)
         if seq is None:
             return None
+
         self.only_first_stage = only_first_stage
+        if not self.only_first_stage or self.srg is not None:
+            self.srg.dsr.model.cpu()
+            self.srg.itersr.model.cpu()
+        torch.cuda.empty_cache()
+        self.model.transformer.to(self.device)
         tokens = self.generate_tokens(seq, txt_len, num)
+
+        if not self.only_first_stage:
+            self.model.transformer.cpu()
+            torch.cuda.empty_cache()
+            self.srg.dsr.model.to(self.device)
+            self.srg.itersr.model.to(self.device)
         res = self.generate_images(seq, txt_len, tokens)
 
         elapsed = time.perf_counter() - start
