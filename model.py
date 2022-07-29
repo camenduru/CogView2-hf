@@ -241,6 +241,8 @@ class Model:
         start = time.perf_counter()
 
         srg = None if self.args.only_first_stage else SRGroup(self.args)
+        if srg is not None:
+            srg.dsr.max_bz = 2
 
         elapsed = time.perf_counter() - start
         logger.info(f'--- done ({elapsed=:.3f}) ---')
