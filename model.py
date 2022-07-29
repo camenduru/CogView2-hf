@@ -294,6 +294,7 @@ class Model:
             torch.cuda.empty_cache()
             self.srg.dsr.model.to(self.device)
             self.srg.itersr.model.to(self.device)
+        torch.cuda.empty_cache()
         res = self.generate_images(seq, txt_len, tokens)
 
         elapsed = time.perf_counter() - start
