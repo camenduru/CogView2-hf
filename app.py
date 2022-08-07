@@ -10,7 +10,7 @@ DESCRIPTION = '''# <a href="https://github.com/THUDM/CogView2">CogView2</a> (tex
 
 The model accepts English or Chinese as input.
 In general, Chinese input produces better results than English input.
-By checking the "Translate to Chinese" checkbox, the results of English to Chinese translation with this Space will be used as input. Since the translation model may mistranslate, you may want to use the translation results from other translation services.
+By checking the "Translate to Chinese" checkbox, the results of English to Chinese translation with [this Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) will be used as input. Since the translation model may mistranslate, you may want to use the translation results from other translation services.
 '''
 NOTES = '''
 - This app is adapted from <a href="https://github.com/hysts/CogView2_demo">https://github.com/hysts/CogView2_demo</a>. It would be recommended to use the repo if you want to run the app yourself.
