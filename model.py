@@ -7,6 +7,7 @@ import functools
 import logging
 import os
 import pathlib
+import random
 import subprocess
 import sys
 import time
@@ -402,6 +403,7 @@ class AppModel(Model):
         super().__init__(max_inference_batch_size, only_first_stage)
         self.translator = gr.Interface.load(
             'spaces/chinhon/translation_eng2ch')
+        self.rng = random.Random()
 
     def make_grid(self, images: list[np.ndarray] | None) -> np.ndarray | None:
         if images is None or len(images) == 0:
@@ -422,7 +424,7 @@ class AppModel(Model):
                 grid[h * i:h * (i + 1), w * j:w * (j + 1)] = images[index]
         return grid
 
-    def run_with_translation(
+    def run_advanced(
         self, text: str, translate: bool, style: str, seed: int,
         only_first_stage: bool, num: int
     ) -> tuple[str | None, np.ndarray | None, list[np.ndarray] | None]:
@@ -436,3 +438,12 @@ class AppModel(Model):
         results = self.run(text, style, seed, only_first_stage, num)
         grid_image = self.make_grid(results)
         return translated_text, grid_image, results
+
+    def run_simple(self, text: str) -> np.ndarray | None:
+        logger.info(f'{text=}')
+        if text.isascii():
+            text = self.translator(text)
+        seed = self.rng.randint(0, 100000)
+        results = self.run(text, 'photo', seed, False, 4)
+        grid_image = self.make_grid(results)
+        return grid_image
